@@ -11,7 +11,7 @@ class Trainer extends Model
     use BelongsToTenant;
 
     protected $fillable = [
-        'tenant_id', 'name', 'specialization', 'bio', 'photo', 'email', 'phone', 'active',
+        'tenant_id', 'user_id', 'name', 'specialization', 'bio', 'photo', 'email', 'phone', 'active',
     ];
 
     protected function casts(): array
@@ -21,6 +21,7 @@ class Trainer extends Model
         ];
     }
 
+    public function user() { return $this->belongsTo(User::class); }
     public function leadPrograms() { return $this->hasMany(Program::class, 'lead_trainer_id'); }
 
     public function photoUrl(): ?string

@@ -34,6 +34,19 @@ class TenantProfileController extends Controller
             'accreditation'     => 'nullable|string|max:50',
             'logo'              => 'nullable|image|max:1024',
             'cover_image'       => 'nullable|image|max:2048',
+
+            'bpjs_kesehatan_rate_employee' => 'nullable|numeric|min:0|max:100',
+            'bpjs_kesehatan_rate_employer' => 'nullable|numeric|min:0|max:100',
+            'bpjs_kesehatan_salary_cap'    => 'nullable|numeric|min:0',
+            'bpjs_jht_rate_employee'       => 'nullable|numeric|min:0|max:100',
+            'bpjs_jht_rate_employer'       => 'nullable|numeric|min:0|max:100',
+            'bpjs_jp_rate_employee'        => 'nullable|numeric|min:0|max:100',
+            'bpjs_jp_rate_employer'        => 'nullable|numeric|min:0|max:100',
+            'bpjs_jp_salary_cap'           => 'nullable|numeric|min:0',
+            'bpjs_jkk_rate_employer'       => 'nullable|numeric|min:0|max:100',
+            'bpjs_jkm_rate_employer'       => 'nullable|numeric|min:0|max:100',
+            'overtime_multiplier'          => 'nullable|numeric|min:1',
+            'standard_work_days'           => 'nullable|integer|min:1|max:31',
         ]);
 
         if ($request->hasFile('logo')) {

@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 
 class RoleController extends Controller
 {
-    const SYSTEM_ROLES = ['superadmin', 'ultraadmin', 'admin', 'owner', 'staff', 'perusahaan'];
+    const SYSTEM_ROLES = ['superadmin', 'ultraadmin', 'admin', 'owner', 'staff', 'perusahaan', 'trainer', 'security'];
 
     public function index()
     {

@@ -13,15 +13,17 @@ class UserController extends Controller
     {
         $search = $request->q;
         $users = User::where('tenant_id', auth()->user()->tenant_id)
-            ->where('role', '!=', 'perusahaan')
+            ->whereNotIn('role', ['perusahaan', 'trainer'])
             ->when($search, fn ($q) => $q->where('name', 'like', "%$search%")->orWhere('email', 'like', "%$search%"))
             ->latest()->paginate(20)->withQueryString();
         return view('users.index', compact('users', 'search'));
     }
 
-    // Role "perusahaan" sengaja tidak muncul di sini -- akun perusahaan wajib ditautkan ke
-    // satu company_id, jadi hanya bisa dibuat lewat CompanyUserController (menu Perusahaan Mitra).
-    private const EXCLUDED_ROLES = ['superadmin', 'ultraadmin', 'perusahaan'];
+    // Role "perusahaan"/"trainer" sengaja tidak muncul di sini -- akun perusahaan wajib
+    // ditautkan ke satu company_id (lewat CompanyUserController, menu Perusahaan Mitra),
+    // dan akun trainer wajib ditautkan ke satu profil Trainer (lewat TrainerUserController,
+    // menu Trainer/Instruktur).
+    private const EXCLUDED_ROLES = ['superadmin', 'ultraadmin', 'perusahaan', 'trainer'];
 
     private function formData(): array
     {
@@ -57,13 +59,13 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
-        abort_unless($user->tenant_id === auth()->user()->tenant_id && $user->role !== 'perusahaan', 404);
+        abort_unless($user->tenant_id === auth()->user()->tenant_id && !in_array($user->role, ['perusahaan', 'trainer']), 404);
         return view('users.form', array_merge($this->formData(), compact('user')));
     }
 
     public function update(Request $request, User $user)
     {
-        abort_unless($user->tenant_id === auth()->user()->tenant_id && $user->role !== 'perusahaan', 404);
+        abort_unless($user->tenant_id === auth()->user()->tenant_id && !in_array($user->role, ['perusahaan', 'trainer']), 404);
         $validRoles = DB::table('roles')->where('active', 1)->whereNotIn('name', self::EXCLUDED_ROLES)->pluck('name')->implode(',');
         $data = $request->validate([
             'name'     => 'required|string|max:150',

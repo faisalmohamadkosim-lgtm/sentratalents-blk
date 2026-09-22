@@ -15,7 +15,7 @@
   </form>
 
   <table>
-    <thead><tr><th style="width:56px">Foto</th><th>Nama</th><th>Spesialisasi</th><th>Kontak</th><th>Status</th><th></th></tr></thead>
+    <thead><tr><th style="width:56px">Foto</th><th>Nama</th><th>Spesialisasi</th><th>Kontak</th><th>Status</th><th>Akun Login</th><th></th></tr></thead>
     <tbody>
       @forelse($trainers as $t)
       <tr>
@@ -30,6 +30,13 @@
         <td style="font-size:.82rem;color:var(--text2)">{{ $t->specialization ?? '-' }}</td>
         <td style="font-size:.8rem;color:var(--text2)">{{ $t->email ?? $t->phone ?? '-' }}</td>
         <td><span class="badge {{ $t->active ? 'badge-green' : 'badge-gray' }}">{{ $t->active ? 'Aktif' : 'Nonaktif' }}</span></td>
+        <td>
+          @if($t->user_id)
+            <span class="badge badge-blue">Sudah ada</span>
+          @else
+            <a href="{{ route('trainers.users.create', $t) }}" class="btn btn-outline btn-sm">+ Akun Login</a>
+          @endif
+        </td>
         <td style="white-space:nowrap">
           <a href="{{ route('trainers.edit', $t) }}" class="btn btn-outline btn-sm">Edit</a>
           <form method="POST" action="{{ route('trainers.destroy', $t) }}" style="display:inline" onsubmit="return confirm('Hapus trainer ini?')">
@@ -39,7 +46,7 @@
         </td>
       </tr>
       @empty
-      <tr><td colspan="6" style="text-align:center;color:var(--text3);padding:2rem">Belum ada trainer.</td></tr>
+      <tr><td colspan="7" style="text-align:center;color:var(--text3);padding:2rem">Belum ada trainer.</td></tr>
       @endforelse
     </tbody>
   </table>

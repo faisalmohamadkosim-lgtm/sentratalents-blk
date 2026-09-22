@@ -31,12 +31,14 @@ a{color:var(--primary);text-decoration:none}
   display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;flex-shrink:0}
 .tb-link{color:rgba(255,255,255,.7);font-size:.78rem;padding:.25rem .5rem;border-radius:5px;transition:background .12s}
 .tb-link:hover{background:rgba(255,255,255,.12);color:#fff;text-decoration:none}
+.tb-menu-btn{display:none;background:none;border:none;color:#fff;font-size:1.3rem;cursor:pointer;padding:.2rem .4rem;line-height:1}
 
 /* layout */
 .app-body{display:flex;flex:1;min-height:0}
 .sidebar{width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);
   padding:.75rem .625rem;overflow-y:auto;flex-shrink:0;display:flex;flex-direction:column;gap:.1rem}
 .main{flex:1;overflow-y:auto;padding:1.5rem}
+.sidebar-backdrop{display:none}
 
 /* nav */
 .nav-section{font-size:.64rem;font-weight:700;color:var(--text3);text-transform:uppercase;
@@ -126,7 +128,14 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:1.25rem 0}
 .text-warning{color:var(--warning)}
 
 @media(max-width:768px){
-  .sidebar{display:none}
+  .tb-menu-btn{display:block}
+  .sidebar{
+    position:fixed;top:56px;left:0;bottom:0;z-index:160;
+    transform:translateX(-100%);transition:transform .2s ease;
+    box-shadow:2px 0 16px rgba(0,0,0,.2);
+  }
+  .sidebar.is-open{transform:translateX(0)}
+  .sidebar-backdrop.is-open{display:block;position:fixed;inset:56px 0 0 0;background:rgba(0,0,0,.4);z-index:150}
   .form-grid{grid-template-columns:1fr}
   .main{padding:1rem}
 }
@@ -137,6 +146,7 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:1.25rem 0}
 
 {{-- Topbar --}}
 <div class="topbar">
+  <button type="button" class="tb-menu-btn" id="tbMenuBtn" aria-label="Buka menu">☰</button>
   <div class="tb-brand">
     @if (auth()->user()->tenant?->logoUrl())
       <img src="{{ auth()->user()->tenant->logoUrl() }}" alt="Logo" style="width:22px;height:22px;object-fit:contain;border-radius:4px">
@@ -164,7 +174,7 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:1.25rem 0}
 <div class="app-body">
 
 {{-- Sidebar --}}
-<div class="sidebar">
+<div class="sidebar" id="sidebarEl">
   @php $role = auth()->user()->role; $tenant = auth()->user()->tenant; @endphp
 
   <div class="nav-section">Menu Utama</div>
@@ -190,6 +200,30 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:1.25rem 0}
   @if($role === 'perusahaan')
   <div class="nav-section">Portal Perusahaan</div>
   <a href="{{ route('company-portal.index') }}" class="nav-item {{ request()->routeIs('company-portal.*') ? 'active' : '' }}">📋 Peserta Kami</a>
+  @endif
+
+  @if($role === 'trainer')
+  <div class="nav-section">Portal Trainer</div>
+  <a href="{{ route('trainer-portal.index') }}" class="nav-item {{ request()->routeIs('trainer-portal.*') ? 'active' : '' }}">📚 Program Saya</a>
+  <a href="{{ route('attendances.mine') }}" class="nav-item {{ request()->routeIs('attendances.mine') ? 'active' : '' }}">🕒 Absensi Saya</a>
+  @endif
+
+  @if(in_array($role, ['admin','owner','staff']))
+  <div class="nav-section">SDM</div>
+  <a href="{{ route('attendances.mine') }}" class="nav-item {{ request()->routeIs('attendances.mine') ? 'active' : '' }}">🕒 Absensi Saya</a>
+  <a href="{{ route('payroll.mine') }}" class="nav-item {{ request()->routeIs('payroll.mine') ? 'active' : '' }}">💰 Slip Gaji Saya</a>
+  @if(in_array($role, ['admin','owner']))
+  <a href="{{ route('employees.index') }}" class="nav-item {{ request()->routeIs('employees.*') ? 'active' : '' }}">🧑‍💼 Karyawan</a>
+  <a href="{{ route('attendances.index') }}" class="nav-item {{ request()->routeIs('attendances.index') || request()->routeIs('attendances.create') || request()->routeIs('attendances.edit') ? 'active' : '' }}">📆 Absensi Pegawai</a>
+  <a href="{{ route('payroll.index') }}" class="nav-item {{ request()->routeIs('payroll.index') || request()->routeIs('payroll.create') || request()->routeIs('payroll.show') ? 'active' : '' }}">💵 Payroll</a>
+  <a href="{{ route('required-positions.index') }}" class="nav-item {{ request()->routeIs('required-positions.*') ? 'active' : '' }}">🗒️ Jabatan Minimal</a>
+  <a href="{{ route('attendance-scan.show') }}" class="nav-item {{ request()->routeIs('attendance-scan.*') ? 'active' : '' }}">📷 Scan QR Absensi</a>
+  @endif
+  @endif
+
+  @if($role === 'security')
+  <div class="nav-section">Portal Security</div>
+  <a href="{{ route('attendance-scan.show') }}" class="nav-item {{ request()->routeIs('attendance-scan.*') ? 'active' : '' }}">📷 Scan QR Absensi</a>
   @endif
 
   @if(in_array($role, ['admin','owner']))
@@ -221,6 +255,8 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:1.25rem 0}
   @endif
 </div>
 
+<div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
 {{-- Main content --}}
 <div class="main">
   @if(session('success'))
@@ -244,6 +280,21 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:1.25rem 0}
 </div>
 
 </div>{{-- app-body --}}
+<script>
+(function () {
+  var btn = document.getElementById('tbMenuBtn');
+  var sidebar = document.getElementById('sidebarEl');
+  var backdrop = document.getElementById('sidebarBackdrop');
+  if (!btn || !sidebar || !backdrop) return;
+  function closeMenu() { sidebar.classList.remove('is-open'); backdrop.classList.remove('is-open'); }
+  btn.addEventListener('click', function () {
+    sidebar.classList.toggle('is-open');
+    backdrop.classList.toggle('is-open');
+  });
+  backdrop.addEventListener('click', closeMenu);
+  sidebar.querySelectorAll('.nav-item').forEach(function (a) { a.addEventListener('click', closeMenu); });
+})();
+</script>
 @stack('scripts')
 </body>
 </html>

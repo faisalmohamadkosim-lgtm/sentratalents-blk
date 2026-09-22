@@ -27,10 +27,12 @@ a{color:var(--primary);text-decoration:none}
 .tb-user{margin-left:auto;display:flex;align-items:center;gap:.75rem;font-size:.82rem}
 .tb-link{color:rgba(255,255,255,.7);font-size:.78rem;padding:.25rem .5rem;border-radius:5px;transition:background .12s}
 .tb-link:hover{background:rgba(255,255,255,.12);color:#fff;text-decoration:none}
+.tb-menu-btn{display:none;background:none;border:none;color:#fff;font-size:1.3rem;cursor:pointer;padding:.2rem .4rem;line-height:1}
 .app-body{display:flex;flex:1;min-height:0}
 .sidebar{width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);
   padding:.75rem .625rem;overflow-y:auto;flex-shrink:0;display:flex;flex-direction:column;gap:.1rem}
 .main{flex:1;overflow-y:auto;padding:1.5rem}
+.sidebar-backdrop{display:none}
 .nav-section{font-size:.64rem;font-weight:700;color:var(--text3);text-transform:uppercase;
   letter-spacing:.09em;padding:.625rem .625rem .25rem;margin-top:.375rem}
 .nav-item{display:flex;align-items:center;gap:.5rem;padding:.48rem .75rem;border-radius:7px;
@@ -71,12 +73,20 @@ input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(1
 .flash{padding:.65rem 1rem;border-radius:8px;font-size:.83rem;margin-bottom:1rem;font-weight:500}
 .flash-success{background:#dcfce7;color:#166534;border-left:4px solid var(--success)}
 .flash-error{background:#fee2e2;color:#991b1b;border-left:4px solid var(--danger)}
-@media(max-width:768px){.sidebar{display:none}.form-grid{grid-template-columns:1fr}.main{padding:1rem}}
+@media(max-width:768px){
+  .tb-menu-btn{display:block}
+  .sidebar{position:fixed;top:56px;left:0;bottom:0;z-index:160;transform:translateX(-100%);transition:transform .2s ease;box-shadow:2px 0 16px rgba(0,0,0,.2)}
+  .sidebar.is-open{transform:translateX(0)}
+  .sidebar-backdrop.is-open{display:block;position:fixed;inset:56px 0 0 0;background:rgba(0,0,0,.4);z-index:150}
+  .form-grid{grid-template-columns:1fr}
+  .main{padding:1rem}
+}
 </style>
 </head>
 <body>
 
 <div class="topbar">
+  <button type="button" class="tb-menu-btn" id="tbMenuBtn" aria-label="Buka menu">☰</button>
   <div class="tb-brand">
     <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
       <path d="M12 7v5m0 0v5m0-5H7m5 0h5" stroke="#fff" stroke-width="2.3" stroke-linecap="round"/>
@@ -94,11 +104,13 @@ input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(1
 
 <div class="app-body">
 
-<div class="sidebar">
+<div class="sidebar" id="sidebarEl">
   <div class="nav-section">Menu Utama</div>
   <a href="{{ route('ultraadmin.dashboard') }}" class="nav-item {{ request()->routeIs('ultraadmin.dashboard') ? 'active' : '' }}">📊 Dashboard</a>
   <a href="{{ route('ultraadmin.superadmin-users.index') }}" class="nav-item {{ request()->routeIs('ultraadmin.superadmin-users.*') ? 'active' : '' }}">👤 Kelola Superadmin</a>
 </div>
+
+<div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
 <div class="main">
   @if(session('status'))
@@ -115,6 +127,21 @@ input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(1
 </div>
 
 </div>{{-- app-body --}}
+<script>
+(function () {
+  var btn = document.getElementById('tbMenuBtn');
+  var sidebar = document.getElementById('sidebarEl');
+  var backdrop = document.getElementById('sidebarBackdrop');
+  if (!btn || !sidebar || !backdrop) return;
+  function closeMenu() { sidebar.classList.remove('is-open'); backdrop.classList.remove('is-open'); }
+  btn.addEventListener('click', function () {
+    sidebar.classList.toggle('is-open');
+    backdrop.classList.toggle('is-open');
+  });
+  backdrop.addEventListener('click', closeMenu);
+  sidebar.querySelectorAll('.nav-item').forEach(function (a) { a.addEventListener('click', closeMenu); });
+})();
+</script>
 @stack('scripts')
 </body>
 </html>

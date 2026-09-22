@@ -2,14 +2,17 @@
 
 namespace Database\Seeders;
 
+use App\Models\Attendance;
 use App\Models\Batch;
 use App\Models\Company;
+use App\Models\Employee;
 use App\Models\Enrollment;
 use App\Models\Facility;
 use App\Models\OrgStructureMember;
 use App\Models\Participant;
 use App\Models\Program;
 use App\Models\ProgramStage;
+use App\Models\RequiredPosition;
 use App\Models\Tenant;
 use App\Models\TenantGallery;
 use App\Models\Trainer;
@@ -36,6 +39,10 @@ class DatabaseSeeder extends Seeder
         'Suryani', 'Maulana', 'Puspita', 'Anggraini',
     ];
 
+    // Counter global (lintas tenant) untuk employee_no, karena kolomnya unique di seluruh
+    // tabel (bukan per-tenant) -- lihat EmployeeController::generateNo() yang memakai pola sama.
+    private int $employeeSeq = 1;
+
     public function run(): void
     {
         $tenantData = [
@@ -61,8 +68,9 @@ class DatabaseSeeder extends Seeder
                 'active' => true,
             ]);
 
-            $this->seedUsers($tenant, $t['slug']);
-            $trainers = $this->seedTrainers($tenant);
+            $admin = $this->seedUsers($tenant, $t['slug']);
+            $trainers = $this->seedTrainers($tenant, $t['slug']);
+            $trainerUser = User::where('tenant_id', $tenant->id)->where('role', 'trainer')->first();
             $this->seedFacilities($tenant);
             $this->seedOrgStructure($tenant);
             $this->seedGallery($tenant, $t['slug']);
@@ -71,6 +79,10 @@ class DatabaseSeeder extends Seeder
             $participants = $this->seedParticipants($tenant);
             $companies = $this->seedCompanies($tenant, $t['slug']);
             $this->seedEnrollments($tenant, $participants, $batches, $companies);
+
+            $employees = $this->seedEmployees($tenant, $admin, $trainerUser);
+            $this->seedAttendances($tenant, $employees);
+            $this->seedRequiredPositions($tenant);
         }
 
         $this->seedPlatformGallery($tenantData);
@@ -128,11 +140,11 @@ class DatabaseSeeder extends Seeder
         return $this->firstNames[array_rand($this->firstNames)] . ' ' . $this->lastNames[array_rand($this->lastNames)];
     }
 
-    private function seedUsers(Tenant $tenant, string $slug): void
+    private function seedUsers(Tenant $tenant, string $slug): User
     {
         $domain = str_replace('-', '', $slug) . '.test';
 
-        User::create([
+        $admin = User::create([
             'tenant_id' => $tenant->id,
             'name' => 'Admin ' . $tenant->name,
             'email' => 'admin@' . $domain,
@@ -161,6 +173,18 @@ class DatabaseSeeder extends Seeder
                 'active' => true,
             ]);
         }
+
+        // Akun demo untuk scan QR absensi -- lihat AttendanceScanController.
+        User::create([
+            'tenant_id' => $tenant->id,
+            'name' => 'Security ' . $tenant->name,
+            'email' => 'security@' . $domain,
+            'password' => Hash::make('Test@123'),
+            'role' => 'security',
+            'active' => true,
+        ]);
+
+        return $admin;
     }
 
     private function seedFacilities(Tenant $tenant): void
@@ -184,12 +208,13 @@ class DatabaseSeeder extends Seeder
         }
     }
 
-    private function seedTrainers(Tenant $tenant): \Illuminate\Support\Collection
+    private function seedTrainers(Tenant $tenant, string $slug): \Illuminate\Support\Collection
     {
         $specializations = [
             'Las & Fabrikasi Logam', 'Teknik Otomotif', 'Tata Busana', 'Teknologi Informasi',
             'Tata Boga', 'Listrik Industri', 'Desain Grafis', 'Perhotelan',
         ];
+        $domain = str_replace('-', '', $slug) . '.test';
         $trainers = collect();
         foreach (range(1, random_int(3, 5)) as $i) {
             $name = $this->randomName();
@@ -203,6 +228,22 @@ class DatabaseSeeder extends Seeder
                 'active' => true,
             ]));
         }
+
+        // Akun login demo untuk trainer pertama -- role "trainer", dipakai buat memantau
+        // program & angkatan yang mereka ampu lewat portal read-only.
+        if ($trainers->isNotEmpty()) {
+            $firstTrainer = $trainers->first();
+            $user = User::create([
+                'tenant_id' => $tenant->id,
+                'name' => $firstTrainer->name,
+                'email' => 'trainer@' . $domain,
+                'password' => Hash::make('Test@123'),
+                'role' => 'trainer',
+                'active' => true,
+            ]);
+            $firstTrainer->update(['user_id' => $user->id]);
+        }
+
         return $trainers;
     }
 
@@ -256,10 +297,12 @@ class DatabaseSeeder extends Seeder
         $stagePool = ['Pengenalan K3', 'Dasar Teori', 'Praktik Dasar', 'Praktik Lanjutan', 'Uji Kompetensi', 'Praktik Kerja Lapangan'];
 
         $programs = collect();
-        foreach (collect($pool)->shuffle()->take(random_int(2, 4))->values() as $p) {
+        foreach (collect($pool)->shuffle()->take(random_int(2, 4))->values() as $i => $p) {
+            // Program pertama sengaja diampu trainer pertama (yang ditautkan ke akun login
+            // demo di seedTrainers()), supaya portal trainer langsung ada datanya waktu diuji.
             $program = Program::create([
                 'tenant_id' => $tenant->id,
-                'lead_trainer_id' => $trainers->isNotEmpty() ? $trainers->random()->id : null,
+                'lead_trainer_id' => $trainers->isEmpty() ? null : ($i === 0 ? $trainers->first()->id : $trainers->random()->id),
                 'name' => $p['name'],
                 'category' => $p['category'],
                 'description' => "Program pelatihan {$p['name']} untuk membekali peserta dengan keterampilan siap kerja.",
@@ -420,5 +463,102 @@ class DatabaseSeeder extends Seeder
                 ]);
             }
         }
+    }
+
+    // Karyawan (HR/Payroll) -- beberapa jabatan khas BLK, pegawai pertama ditautkan ke
+    // akun admin tenant supaya halaman self-service (Absensi Saya/Slip Gaji Saya) punya
+    // data begitu login sebagai admin@<tenant>.test.
+    private function seedEmployees(Tenant $tenant, User $adminUser, ?User $trainerUser = null): \Illuminate\Support\Collection
+    {
+        $positionPool = [
+            ['position' => 'Kepala BLK', 'employment_type' => 'tetap', 'base_salary' => 6500000, 'allowance_position' => 750000],
+            ['position' => 'Kepala Tata Usaha', 'employment_type' => 'tetap', 'base_salary' => 5500000, 'allowance_position' => 400000],
+            ['position' => 'Instruktur/Trainer', 'employment_type' => 'tetap', 'base_salary' => 4800000, 'allowance_position' => 0],
+            ['position' => 'Tenaga Administrasi', 'employment_type' => 'kontrak', 'base_salary' => 3500000, 'allowance_position' => 0],
+            ['position' => 'Staf Keuangan', 'employment_type' => 'tetap', 'base_salary' => 4000000, 'allowance_position' => 0],
+            ['position' => 'Petugas Kebersihan', 'employment_type' => 'harian', 'base_salary' => 2800000, 'allowance_position' => 0],
+        ];
+        $ptkpOptions = Employee::ptkpOptions();
+        $year = now()->year;
+        $employees = collect();
+
+        foreach (collect($positionPool)->take(random_int(4, 6))->values() as $i => $p) {
+            $isAdminLink = $i === 0;
+            // Slot "Instruktur/Trainer" ditautkan ke akun login trainer demo (kalau ada)
+            // supaya menu Absensi Saya di portal trainer langsung ada datanya saat diuji.
+            $isTrainerLink = !$isAdminLink && $trainerUser && $p['position'] === 'Instruktur/Trainer';
+            $linkedUser = $isAdminLink ? $adminUser : ($isTrainerLink ? $trainerUser : null);
+            $name = $linkedUser?->name ?? $this->randomName();
+
+            $employees->push(Employee::create([
+                'tenant_id' => $tenant->id,
+                'user_id' => $linkedUser?->id,
+                'employee_no' => 'EMP-' . $year . '-' . str_pad((string) $this->employeeSeq++, 4, '0', STR_PAD_LEFT),
+                'name' => $name,
+                'nik' => (string) random_int(3100000000000000, 3999999999999999),
+                'position' => $p['position'],
+                'employment_type' => $p['employment_type'],
+                'ptkp_status' => $ptkpOptions[array_rand($ptkpOptions)],
+                'join_date' => now()->subYears(random_int(1, 8))->subDays(random_int(0, 300)),
+                'status' => random_int(1, 100) <= 85 ? 'active' : 'inactive',
+                'base_salary' => $p['base_salary'],
+                'allowance_position' => $p['allowance_position'],
+                'allowance_transport' => 300000,
+                'allowance_meal' => 250000,
+                'phone' => '08' . random_int(1000000000, 1999999999),
+                'email' => Str::slug($name) . random_int(1, 999) . '@' . Str::slug($tenant->name) . '.test',
+                'bpjs_kesehatan_active' => true,
+                'bpjs_tk_active' => true,
+            ]));
+        }
+
+        return $employees;
+    }
+
+    // Absensi bulan berjalan -- data secukupnya (bukan tiap hari) supaya halaman rekap
+    // absensi (attendances.index) langsung ada isinya saat pertama dibuka.
+    private function seedAttendances(Tenant $tenant, \Illuminate\Support\Collection $employees): void
+    {
+        $statusPool = ['hadir', 'hadir', 'hadir', 'hadir', 'hadir', 'izin', 'sakit', 'alpha'];
+        $daysElapsed = max(1, now()->day - 1);
+
+        foreach ($employees->where('status', 'active') as $employee) {
+            $takeCount = min($daysElapsed, random_int(6, 10));
+            $days = collect(range(1, $daysElapsed))->shuffle()->take($takeCount)->sort()->values();
+
+            foreach ($days as $d) {
+                $date = now()->startOfMonth()->addDays($d - 1);
+                if ($date->isWeekend()) continue;
+
+                $status = $statusPool[array_rand($statusPool)];
+                Attendance::create([
+                    'tenant_id' => $tenant->id,
+                    'employee_id' => $employee->id,
+                    'date' => $date->toDateString(),
+                    'clock_in' => $status === 'hadir' ? $date->copy()->setTime(8, random_int(0, 30)) : null,
+                    'clock_out' => $status === 'hadir' ? $date->copy()->setTime(17, random_int(0, 30)) : null,
+                    'status' => $status,
+                    'overtime_hours' => ($status === 'hadir' && random_int(1, 100) <= 15) ? collect([1, 2, 3])->random() : 0,
+                ]);
+            }
+        }
+    }
+
+    // Jabatan Minimal -- sebagian dari template default BLK + satu contoh tambahan,
+    // supaya halaman required-positions.index tidak kosong saat pertama dibuka.
+    private function seedRequiredPositions(Tenant $tenant): void
+    {
+        $fromTemplate = collect(RequiredPosition::defaultTemplate())->shuffle()->take(2)->values();
+        foreach ($fromTemplate as $tpl) {
+            RequiredPosition::create($tpl + ['tenant_id' => $tenant->id]);
+        }
+
+        RequiredPosition::create([
+            'tenant_id' => $tenant->id,
+            'position_name' => 'Teknisi Bengkel/Laboratorium',
+            'min_count' => 1,
+            'notes' => 'Sesuai jumlah bengkel/laboratorium yang beroperasi.',
+            'active' => true,
+        ]);
     }
 }

@@ -91,108 +91,111 @@ hr{border:none;border-top:1px solid #f1f5f9;margin:1.5rem 0 1rem}
 </head>
 <body>
 
-{{-- Sisi Kiri: Ilustrasi Timur Tengah --}}
+{{-- Sisi Kiri: Ilustrasi Pendidikan & Pelatihan --}}
 <div class="login-bg">
   <svg viewBox="0 0 900 700" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
     <defs>
       <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#0a1628"/>
-        <stop offset="45%" stop-color="#1a3a6b"/>
-        <stop offset="75%" stop-color="#c2611f"/>
-        <stop offset="100%" stop-color="#e8820c"/>
+        <stop offset="0%" stop-color="#0a1e3d"/>
+        <stop offset="55%" stop-color="#154a78"/>
+        <stop offset="100%" stop-color="#1c7293"/>
       </linearGradient>
       <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#c9882a"/>
-        <stop offset="100%" stop-color="#7a4e12"/>
+        <stop offset="0%" stop-color="#0f3a5f"/>
+        <stop offset="100%" stop-color="#0a2342"/>
       </linearGradient>
-      <radialGradient id="moon" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stop-color="#fffde7"/>
-        <stop offset="100%" stop-color="#ffd54f"/>
-      </radialGradient>
       <radialGradient id="glow" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stop-color="#ff9800" stop-opacity=".35"/>
-        <stop offset="100%" stop-color="#ff9800" stop-opacity="0"/>
+        <stop offset="0%" stop-color="#ffd54f" stop-opacity=".3"/>
+        <stop offset="100%" stop-color="#ffd54f" stop-opacity="0"/>
       </radialGradient>
-      <filter id="blur8"><feGaussianBlur stdDeviation="8"/></filter>
+      <filter id="blur10"><feGaussianBlur stdDeviation="10"/></filter>
     </defs>
 
     <rect width="900" height="700" fill="url(#sky)"/>
-    <ellipse cx="450" cy="480" rx="380" ry="120" fill="url(#glow)" filter="url(#blur8)"/>
 
-    {{-- Bintang --}}
-    @foreach([[80,40],[150,90],[240,30],[310,70],[390,20],[480,55],[560,35],[640,80],[720,25],[800,60],[850,100],[60,130],[200,110],[350,140],[500,100],[650,60],[760,120],[880,50],[130,60],[420,80],[700,45]] as $s)
-    <circle cx="{{ $s[0] }}" cy="{{ $s[1] }}" r="1" fill="#fff" opacity=".8"/>
+    {{-- Partikel -- nuansa jaringan/terhubung --}}
+    @foreach([[80,40],[150,90],[240,30],[310,70],[390,20],[480,55],[560,35],[640,80],[720,25],[800,60],[850,100],[60,130],[200,110],[350,140],[500,100],[650,60],[760,120],[880,50],[130,60],[420,80],[700,45]] as $p)
+    <circle cx="{{ $p[0] }}" cy="{{ $p[1] }}" r="1.6" fill="#bfe3ff" opacity=".55"/>
     @endforeach
 
-    {{-- Bulan sabit --}}
-    <circle cx="160" cy="110" r="38" fill="url(#moon)" opacity=".95"/>
-    <circle cx="178" cy="100" r="32" fill="#0d2147"/>
-    <polygon points="220,80 223,90 233,90 225,96 228,106 220,100 212,106 215,96 207,90 217,90" fill="#ffd54f" opacity=".9"/>
+    <ellipse cx="470" cy="440" rx="270" ry="160" fill="url(#glow)" filter="url(#blur10)"/>
 
-    {{-- Gurun --}}
-    <path d="M0 500 Q225 460 450 490 Q675 520 900 480 L900 700 L0 700 Z" fill="url(#ground)"/>
-    <path d="M0 520 Q180 490 360 510 Q540 530 720 505 Q810 495 900 510 L900 700 L0 700Z" fill="#a06820" opacity=".5"/>
+    {{-- Panggung --}}
+    <path d="M0 560 Q225 525 450 545 Q675 565 900 530 L900 700 L0 700 Z" fill="url(#ground)"/>
+    <path d="M0 580 Q220 555 440 570 Q660 585 900 560 L900 700 L0 700Z" fill="#0d2c4d" opacity=".55"/>
 
-    {{-- Masjid kiri --}}
-    <ellipse cx="155" cy="360" rx="55" ry="58" fill="#1e3a5f"/>
-    <ellipse cx="155" cy="362" rx="50" ry="52" fill="#254d7a"/>
-    <rect x="62" y="290" width="20" height="160" rx="3" fill="#1e3a5f"/>
-    <ellipse cx="72" cy="290" rx="10" ry="18" fill="#254d7a"/>
-    <rect x="69" y="272" width="6" height="20" fill="#c9a227"/>
-    <circle cx="72" cy="270" r="5" fill="#ffd54f"/>
-    <rect x="232" y="290" width="20" height="160" rx="3" fill="#1e3a5f"/>
-    <ellipse cx="242" cy="290" rx="10" ry="18" fill="#254d7a"/>
-    <rect x="239" y="272" width="6" height="20" fill="#c9a227"/>
-    <circle cx="242" cy="270" r="5" fill="#ffd54f"/>
-    <rect x="80" y="400" width="150" height="80" rx="4" fill="#1e3a5f"/>
-    <ellipse cx="110" cy="402" rx="20" ry="22" fill="#254d7a"/>
-    <ellipse cx="200" cy="402" rx="20" ry="22" fill="#254d7a"/>
-    <path d="M138 480 L138 440 Q155 425 172 440 L172 480 Z" fill="#0d2147"/>
+    {{-- Roda gigi + kunci pas (pelatihan vokasi/teknis) --}}
+    <g transform="translate(235,470)">
+      <circle r="62" fill="#1c7293"/>
+      <rect x="-8" y="-78" width="16" height="24" rx="3" fill="#1c7293"/>
+      <rect x="-8" y="-78" width="16" height="24" rx="3" fill="#1c7293" transform="rotate(45)"/>
+      <rect x="-8" y="-78" width="16" height="24" rx="3" fill="#1c7293" transform="rotate(90)"/>
+      <rect x="-8" y="-78" width="16" height="24" rx="3" fill="#1c7293" transform="rotate(135)"/>
+      <rect x="-8" y="-78" width="16" height="24" rx="3" fill="#1c7293" transform="rotate(180)"/>
+      <rect x="-8" y="-78" width="16" height="24" rx="3" fill="#1c7293" transform="rotate(225)"/>
+      <rect x="-8" y="-78" width="16" height="24" rx="3" fill="#1c7293" transform="rotate(270)"/>
+      <rect x="-8" y="-78" width="16" height="24" rx="3" fill="#1c7293" transform="rotate(315)"/>
+      <circle r="42" fill="#1c7293"/>
+      <circle r="24" fill="#0a2342"/>
+      <circle r="8" fill="#2c8fb5"/>
+      <g transform="rotate(-35)">
+        <rect x="-70" y="-8" width="140" height="16" rx="8" fill="#f4f7fb"/>
+        <path d="M-92,-18 Q-104,0 -92,18 L-70,9 L-70,-9 Z" fill="#f4f7fb"/>
+        <circle cx="88" cy="0" r="16" fill="#f4f7fb"/>
+        <circle cx="88" cy="0" r="7" fill="#1c7293"/>
+      </g>
+    </g>
 
-    {{-- Masjid tengah --}}
-    <ellipse cx="450" cy="295" rx="105" ry="95" fill="#2c4f82"/>
-    <ellipse cx="450" cy="300" rx="95" ry="85" fill="#345e9a"/>
-    <rect x="308" y="210" width="24" height="230" rx="4" fill="#2c4f82"/>
-    <ellipse cx="320" cy="210" rx="12" ry="22" fill="#345e9a"/>
-    <rect x="316" y="188" width="8" height="25" fill="#d4a827"/>
-    <circle cx="320" cy="185" r="7" fill="#ffd54f"/>
-    <rect x="568" y="210" width="24" height="230" rx="4" fill="#2c4f82"/>
-    <ellipse cx="580" cy="210" rx="12" ry="22" fill="#345e9a"/>
-    <rect x="576" y="188" width="8" height="25" fill="#d4a827"/>
-    <circle cx="580" cy="185" r="7" fill="#ffd54f"/>
-    <rect x="320" y="360" width="260" height="120" rx="5" fill="#2c4f82"/>
-    <ellipse cx="360" cy="362" rx="28" ry="30" fill="#345e9a"/>
-    <ellipse cx="540" cy="362" rx="28" ry="30" fill="#345e9a"/>
-    <path d="M425 480 L425 432 Q450 412 475 432 L475 480 Z" fill="#0a1628"/>
+    {{-- Buku terbuka + topi wisuda (pendidikan) --}}
+    <g transform="translate(470,520)">
+      <path d="M0,-70 Q-90,-85 -155,-55 L-155,-10 Q-90,-30 0,-15 Z" fill="#fdf6e3"/>
+      <path d="M0,-70 Q90,-85 155,-55 L155,-10 Q90,-30 0,-15 Z" fill="#fdf6e3"/>
+      <line x1="-130" y1="-47" x2="-42" y2="-37" stroke="#d9c9a3" stroke-width="3" stroke-linecap="round"/>
+      <line x1="-124" y1="-32" x2="-38" y2="-24" stroke="#d9c9a3" stroke-width="3" stroke-linecap="round"/>
+      <line x1="42" y1="-37" x2="130" y2="-47" stroke="#d9c9a3" stroke-width="3" stroke-linecap="round"/>
+      <line x1="38" y1="-24" x2="124" y2="-32" stroke="#d9c9a3" stroke-width="3" stroke-linecap="round"/>
+      <rect x="-4" y="-78" width="8" height="68" rx="3" fill="#e8a33d"/>
 
-    {{-- Masjid kanan --}}
-    <ellipse cx="745" cy="370" rx="50" ry="52" fill="#1e3a5f"/>
-    <ellipse cx="745" cy="372" rx="44" ry="46" fill="#254d7a"/>
-    <rect x="658" y="305" width="18" height="150" rx="3" fill="#1e3a5f"/>
-    <ellipse cx="667" cy="305" rx="9" ry="16" fill="#254d7a"/>
-    <rect x="664" y="289" width="6" height="18" fill="#c9a227"/>
-    <circle cx="667" cy="287" r="5" fill="#ffd54f"/>
-    <rect x="819" y="305" width="18" height="150" rx="3" fill="#1e3a5f"/>
-    <ellipse cx="828" cy="305" rx="9" ry="16" fill="#254d7a"/>
-    <rect x="824" y="289" width="6" height="18" fill="#c9a227"/>
-    <circle cx="828" cy="287" r="5" fill="#ffd54f"/>
-    <rect x="672" y="406" width="146" height="74" rx="4" fill="#1e3a5f"/>
-    <path d="M729 480 L729 446 Q745 432 761 446 L761 480 Z" fill="#0d2147"/>
+      <polygon points="0,-150 78,-122 0,-96 -78,-122" fill="#16243b"/>
+      <rect x="-30" y="-122" width="60" height="22" rx="4" fill="#0f1b2e"/>
+      <circle cx="0" cy="-150" r="6" fill="#ffd54f"/>
+      <path d="M0,-150 Q55,-140 60,-100" stroke="#ffd54f" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <circle cx="60" cy="-100" r="7" fill="#ffd54f"/>
+    </g>
 
-    {{-- Pohon palem --}}
-    <rect x="42" y="430" width="6" height="70" rx="2" fill="#6b3a10"/>
-    <ellipse cx="45" cy="425" rx="22" ry="10" fill="#2d6a1f" transform="rotate(-20,45,425)"/>
-    <ellipse cx="45" cy="425" rx="22" ry="10" fill="#2d6a1f" transform="rotate(20,45,425)"/>
-    <rect x="867" y="440" width="6" height="60" rx="2" fill="#6b3a10"/>
-    <ellipse cx="870" cy="435" rx="20" ry="9" fill="#2d6a1f" transform="rotate(-25,870,435)"/>
-    <ellipse cx="870" cy="435" rx="20" ry="9" fill="#2d6a1f" transform="rotate(25,870,435)"/>
+    {{-- Bola lampu (ide/inovasi) --}}
+    <g transform="translate(650,290)">
+      <line x1="0" y1="-52" x2="0" y2="-68" stroke="#ffd54f" stroke-width="4" stroke-linecap="round"/>
+      <line x1="34" y1="-30" x2="46" y2="-42" stroke="#ffd54f" stroke-width="4" stroke-linecap="round"/>
+      <line x1="-34" y1="-30" x2="-46" y2="-42" stroke="#ffd54f" stroke-width="4" stroke-linecap="round"/>
+      <line x1="44" y1="4" x2="60" y2="4" stroke="#ffd54f" stroke-width="4" stroke-linecap="round" opacity=".8"/>
+      <line x1="-44" y1="4" x2="-60" y2="4" stroke="#ffd54f" stroke-width="4" stroke-linecap="round" opacity=".8"/>
+      <circle r="34" fill="#ffd54f"/>
+      <rect x="-12" y="28" width="24" height="14" rx="3" fill="#c9a227"/>
+      <line x1="-8" y1="42" x2="8" y2="42" stroke="#8a6d1a" stroke-width="3" stroke-linecap="round"/>
+      <line x1="-8" y1="48" x2="8" y2="48" stroke="#8a6d1a" stroke-width="3" stroke-linecap="round"/>
+    </g>
 
-    {{-- Unta --}}
-    <ellipse cx="88" cy="496" rx="22" ry="11" fill="#5a3008"/>
-    <rect x="77" y="485" width="7" height="18" rx="3" fill="#5a3008"/>
-    <rect x="97" y="485" width="7" height="18" rx="3" fill="#5a3008"/>
-    <ellipse cx="78" cy="481" rx="10" ry="8" fill="#5a3008"/>
-    <rect x="72" y="473" width="5" height="12" rx="2" fill="#5a3008"/>
+    {{-- Tumpukan buku + pensil (belajar) --}}
+    <g transform="translate(710,500)">
+      <rect x="-55" y="10" width="110" height="20" rx="4" fill="#1c7293"/>
+      <rect x="-48" y="-12" width="96" height="20" rx="4" fill="#e8a33d"/>
+      <rect x="-40" y="-32" width="80" height="18" rx="4" fill="#f4f7fb"/>
+      <g transform="translate(48,-30) rotate(25)">
+        <rect x="-6" y="-95" width="12" height="70" rx="3" fill="#ffd54f"/>
+        <polygon points="-6,-95 6,-95 0,-112" fill="#f4c56b"/>
+        <polygon points="-2,-108 2,-108 0,-116" fill="#5a4326"/>
+        <rect x="-6" y="-28" width="12" height="10" fill="#e0836b"/>
+      </g>
+    </g>
+
+    {{-- Kilau pencapaian di sekitar topi --}}
+    @foreach([[380,260],[570,235],[430,185],[540,320]] as $sp)
+    <g opacity=".85">
+      <line x1="{{ $sp[0]-6 }}" y1="{{ $sp[1] }}" x2="{{ $sp[0]+6 }}" y2="{{ $sp[1] }}" stroke="#ffd54f" stroke-width="2" stroke-linecap="round"/>
+      <line x1="{{ $sp[0] }}" y1="{{ $sp[1]-6 }}" x2="{{ $sp[0] }}" y2="{{ $sp[1]+6 }}" stroke="#ffd54f" stroke-width="2" stroke-linecap="round"/>
+    </g>
+    @endforeach
 
     <rect x="0" y="550" width="900" height="150" fill="rgba(0,0,0,0.4)"/>
   </svg>

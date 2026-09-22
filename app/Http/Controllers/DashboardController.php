@@ -25,6 +25,14 @@ class DashboardController extends Controller
             return redirect()->route('company-portal.index');
         }
 
+        if ($user->isTrainer()) {
+            return redirect()->route('trainer-portal.index');
+        }
+
+        if ($user->isSecurity()) {
+            return redirect()->route('attendance-scan.show');
+        }
+
         $stats = [
             'programs'      => Program::count(),
             'participants'  => Participant::count(),

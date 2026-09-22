@@ -79,6 +79,61 @@
     </div>
   </div>
 
+  <div class="card" style="margin-bottom:1rem">
+    <div style="font-weight:700;font-size:.9rem;margin-bottom:1rem;color:var(--primary)">Payroll — Tarif BPJS &amp; Lembur</div>
+    <p class="text-muted" style="margin-bottom:1rem;font-size:.82rem">Dipakai untuk estimasi otomatis saat generate Payroll. Sesuaikan bila ada perubahan aturan BPJS/Ketenagakerjaan.</p>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>BPJS Kesehatan — Karyawan (%)</label>
+        <input type="number" step="0.01" name="bpjs_kesehatan_rate_employee" value="{{ old('bpjs_kesehatan_rate_employee', $tenant->bpjs_kesehatan_rate_employee ?? 1) }}" min="0" max="100">
+      </div>
+      <div class="form-group">
+        <label>BPJS Kesehatan — Perusahaan (%)</label>
+        <input type="number" step="0.01" name="bpjs_kesehatan_rate_employer" value="{{ old('bpjs_kesehatan_rate_employer', $tenant->bpjs_kesehatan_rate_employer ?? 4) }}" min="0" max="100">
+      </div>
+      <div class="form-group">
+        <label>Batas Atas Upah BPJS Kesehatan (Rp)</label>
+        <input type="number" name="bpjs_kesehatan_salary_cap" value="{{ old('bpjs_kesehatan_salary_cap', $tenant->bpjs_kesehatan_salary_cap ?? 12000000) }}" min="0" step="1000">
+      </div>
+      <div class="form-group">
+        <label>BPJS JHT — Karyawan (%)</label>
+        <input type="number" step="0.01" name="bpjs_jht_rate_employee" value="{{ old('bpjs_jht_rate_employee', $tenant->bpjs_jht_rate_employee ?? 2) }}" min="0" max="100">
+      </div>
+      <div class="form-group">
+        <label>BPJS JHT — Perusahaan (%)</label>
+        <input type="number" step="0.01" name="bpjs_jht_rate_employer" value="{{ old('bpjs_jht_rate_employer', $tenant->bpjs_jht_rate_employer ?? 3.7) }}" min="0" max="100">
+      </div>
+      <div class="form-group">
+        <label>BPJS JP — Karyawan (%)</label>
+        <input type="number" step="0.01" name="bpjs_jp_rate_employee" value="{{ old('bpjs_jp_rate_employee', $tenant->bpjs_jp_rate_employee ?? 1) }}" min="0" max="100">
+      </div>
+      <div class="form-group">
+        <label>BPJS JP — Perusahaan (%)</label>
+        <input type="number" step="0.01" name="bpjs_jp_rate_employer" value="{{ old('bpjs_jp_rate_employer', $tenant->bpjs_jp_rate_employer ?? 2) }}" min="0" max="100">
+      </div>
+      <div class="form-group">
+        <label>Batas Atas Upah BPJS JP (Rp)</label>
+        <input type="number" name="bpjs_jp_salary_cap" value="{{ old('bpjs_jp_salary_cap', $tenant->bpjs_jp_salary_cap ?? 10042300) }}" min="0" step="1000">
+      </div>
+      <div class="form-group">
+        <label>BPJS JKK — Perusahaan (%)</label>
+        <input type="number" step="0.01" name="bpjs_jkk_rate_employer" value="{{ old('bpjs_jkk_rate_employer', $tenant->bpjs_jkk_rate_employer ?? 0.24) }}" min="0" max="100">
+      </div>
+      <div class="form-group">
+        <label>BPJS JKM — Perusahaan (%)</label>
+        <input type="number" step="0.01" name="bpjs_jkm_rate_employer" value="{{ old('bpjs_jkm_rate_employer', $tenant->bpjs_jkm_rate_employer ?? 0.3) }}" min="0" max="100">
+      </div>
+      <div class="form-group">
+        <label>Pengali Upah Lembur</label>
+        <input type="number" step="0.01" name="overtime_multiplier" value="{{ old('overtime_multiplier', $tenant->overtime_multiplier ?? 1.5) }}" min="1">
+      </div>
+      <div class="form-group">
+        <label>Hari Kerja Standar / Bulan</label>
+        <input type="number" name="standard_work_days" value="{{ old('standard_work_days', $tenant->standard_work_days ?? 25) }}" min="1" max="31">
+      </div>
+    </div>
+  </div>
+
   <div style="display:flex;gap:.5rem">
     <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
     <a href="{{ route('public.tenant.show', $tenant->slug) }}" target="_blank" class="btn btn-outline">🌐 Lihat Halaman Publik</a>
