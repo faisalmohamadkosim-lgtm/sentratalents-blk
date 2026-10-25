@@ -40,28 +40,32 @@ return new class extends Migration {
             $table->integer('last_activity')->index();
         });
 
-        DB::table('users')->insert([
-            [
-                'tenant_id' => null,
-                'name' => 'Ultra Admin',
-                'email' => 'ultraadmin@blk.test',
-                'password' => bcrypt('Test@123'),
-                'role' => 'ultraadmin',
-                'active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'tenant_id' => null,
-                'name' => 'Super Admin',
-                'email' => 'superadmin@blk.test',
-                'password' => bcrypt('Test@123'),
-                'role' => 'superadmin',
-                'active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-        ]);
+        // Akun dev/testing (khusus di luar produksi). Password-nya tertulis di repo ("Test@123"), jadi di PRODUKSI
+        // tidak dibuat: buat akun pertama dengan `php artisan app:bootstrap-ultraadmin` / `app:bootstrap-superadmin`.
+        if (! app()->environment('production')) {
+            DB::table('users')->insert([
+                [
+                    'tenant_id' => null,
+                    'name' => 'Ultra Admin',
+                    'email' => 'ultraadmin@blk.test',
+                    'password' => bcrypt('Test@123'),
+                    'role' => 'ultraadmin',
+                    'active' => true,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
+                [
+                    'tenant_id' => null,
+                    'name' => 'Super Admin',
+                    'email' => 'superadmin@blk.test',
+                    'password' => bcrypt('Test@123'),
+                    'role' => 'superadmin',
+                    'active' => true,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
+            ]);
+        }
     }
     public function down(): void {
         Schema::dropIfExists('sessions');

@@ -10,6 +10,11 @@ class LegacyDataSeeder extends Seeder
 {
     public function run(): void
     {
+        // Akun demo ber-password publik ("Admin@123"): JANGAN dijalankan di produksi.
+        if (app()->environment('production')) {
+            return;
+        }
+
         // Users (skip if already exist)
         if (DB::table('users')->count() === 0) {
             DB::table('users')->insert([

@@ -45,6 +45,14 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
+        // Seeder ini = data demo lengkap (tenant, peserta, pelatih, dst.) dengan akun ber-password publik ("Test@123").
+        // JANGAN dijalankan di produksi.
+        if (app()->environment('production')) {
+            $this->command?->warn('DatabaseSeeder dilewati di produksi (data & akun demo).');
+
+            return;
+        }
+
         $tenantData = [
             ['name' => 'BLK Bandung', 'city' => 'Bandung', 'province' => 'Jawa Barat', 'slug' => 'blk-bandung'],
             ['name' => 'BLK Surabaya Raya', 'city' => 'Surabaya', 'province' => 'Jawa Timur', 'slug' => 'blk-surabaya-raya'],
