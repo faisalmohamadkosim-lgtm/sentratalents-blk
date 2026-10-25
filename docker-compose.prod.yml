@@ -1,0 +1,77 @@
+# Compose PRODUKSI (berdiri sendiri). Pakai: docker compose -f docker-compose.prod.yml up -d --build
+# Beda dari docker-compose.yml (dev): MySQL & Redis tidak dibuka ke luar, password dari .env, tanpa container_name tetap,
+# TANPA sertifikat self-signed (HTTPS ditangani Caddy), nginx TANPA port host dan tersambung ke jaringan Docker
+# "vixiocall_default" tempat container Caddy (vixiocall_caddy) memegang port 80/443 + HTTPS untuk blk.sentratalents.com.
+# Aplikasi membaca /var/www/.env (bind mount); compose juga memakai .env yang sama untuk interpolasi ${...}.
+services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - blk_dbdata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    networks:
+      - blk_net
+
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - blk_redisdata:/data
+    networks:
+      - blk_net
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - .:/var/www
+      - ./docker/php/php.ini:/usr/local/etc/php/conf.d/local.ini:ro
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      blk_net:
+        # Alias unik: nginx ikut di jaringan bersama yang berisi service lain bernama "app".
+        aliases:
+          - blk-app
+
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    volumes:
+      - .:/var/www
+      - ./docker/nginx/prod.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
+    networks:
+      blk_net:
+      edge:
+        aliases:
+          - blk-web
+
+volumes:
+  blk_dbdata:
+  blk_redisdata:
+
+networks:
+  blk_net:
+    driver: bridge
+  edge:
+    name: vixiocall_default
+    external: true
